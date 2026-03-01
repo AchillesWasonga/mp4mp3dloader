@@ -1,4 +1,5 @@
 .mp3env/
+.venv/
 __pycache__/
 downloads/
 .DS_Store
