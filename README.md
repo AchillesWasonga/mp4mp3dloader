@@ -38,3 +38,7 @@ Want absolute best downloaded quality? Open with IINA/VLC
 Want best Apple/iPhone compatibility? Convert to H.264 + AAC
 
 So for maintaining the highest quality without converting, use IINA.
+
+For instagram:
+
+Instagram’s Terms/Help pages also warn against unauthorized scraping/automated collection, so this is best treated as an internal tool for content you have permission to reuse.
