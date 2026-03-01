@@ -28,3 +28,13 @@ Internal tool for downloading high-quality MP4 or MP3 files from supported video
 
 ## Goal
 Provide a clean, reliable, high-quality internal alternative to ad-filled download sites.
+
+How to open the files:
+
+Rule of thumb
+
+Want absolute best downloaded quality? Open with IINA/VLC
+
+Want best Apple/iPhone compatibility? Convert to H.264 + AAC
+
+So for maintaining the highest quality without converting, use IINA.
