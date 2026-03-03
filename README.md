@@ -42,3 +42,9 @@ So for maintaining the highest quality without converting, use IINA.
 For instagram:
 
 Instagram’s Terms/Help pages also warn against unauthorized scraping/automated collection, so this is best treated as an internal tool for content you have permission to reuse.
+
+
+How to run it:
+Youtube: python src/downloader.py "URL" --format mp4
+Instagram: python src/instagram_downloader.py "URL"
+
