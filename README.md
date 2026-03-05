@@ -7,6 +7,7 @@ Internal tool for downloading high-quality MP4 files from supported video URLs w
 - Download best available quality
 - Output as MP4
 - Save locally
+- Save YouTube metadata as JSON sidecar (includes `caption`)
 - Single-user internal use
 
 ## Initial Targets
@@ -51,6 +52,10 @@ YouTube (default output to `downloads/`):
 
 YouTube (custom output folder):
 `./.venv/bin/python src/downloader.py "URL" --output-dir /tmp/eval-test`
+
+YouTube output:
+- Video: `<title>.mp4`
+- Metadata: `<title>.json` (includes `description` and `caption`)
 
 Instagram (default output to `downloads/instagram` + `downloads/instagram_meta`):
 `./.venv/bin/python src/instagram_downloader.py "URL"`

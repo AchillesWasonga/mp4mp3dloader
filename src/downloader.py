@@ -1,4 +1,5 @@
 import argparse
+import json
 import shutil
 import sys
 import time
@@ -86,6 +87,51 @@ def find_final_output_path(
     return matching_files[0] if matching_files else None
 
 
+def build_video_metadata(info: dict, source_url: str, final_path: Path | None) -> dict:
+    description = info.get("description")
+    metadata = {
+        "source_url": source_url,
+        "id": info.get("id"),
+        "title": info.get("title"),
+        "description": description,
+        "caption": description,
+        "uploader": info.get("uploader"),
+        "uploader_id": info.get("uploader_id"),
+        "channel": info.get("channel"),
+        "channel_id": info.get("channel_id"),
+        "upload_date": info.get("upload_date"),
+        "timestamp": info.get("timestamp"),
+        "duration": info.get("duration"),
+        "webpage_url": info.get("webpage_url"),
+        "extractor": info.get("extractor"),
+        "extractor_key": info.get("extractor_key"),
+        "view_count": info.get("view_count"),
+        "like_count": info.get("like_count"),
+        "comment_count": info.get("comment_count"),
+        "tags": info.get("tags"),
+        "categories": info.get("categories"),
+        "width": info.get("width"),
+        "height": info.get("height"),
+        "fps": info.get("fps"),
+        "media_path": str(final_path) if final_path is not None else None,
+    }
+    return metadata
+
+
+def save_video_metadata(metadata: dict, output_dir: Path, final_path: Path | None) -> Path:
+    if final_path is not None:
+        metadata_path = final_path.with_suffix(".json")
+    else:
+        fallback_name = metadata.get("id") or "youtube_metadata"
+        metadata_path = output_dir / f"{fallback_name}.json"
+
+    metadata_path.write_text(
+        json.dumps(metadata, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return metadata_path
+
+
 def download_media(url: str, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     ydl_opts = build_options(output_dir)
@@ -100,13 +146,19 @@ def download_media(url: str, output_dir: Path) -> None:
 
             if isinstance(info, dict):
                 final_path = find_final_output_path(info, ydl, output_dir, started_at)
+                metadata = build_video_metadata(info, url, final_path)
+                metadata_path = save_video_metadata(metadata, output_dir, final_path)
             else:
                 final_path = None
+                metadata_path = None
 
             if final_path is not None:
                 print(f"Saved file: {final_path}")
             else:
                 print(f"Saved file in directory: {output_dir}")
+
+            if metadata_path is not None:
+                print(f"Metadata saved: {metadata_path}")
     except yt_dlp.utils.DownloadError as exc:
         print(f"Download failed: {exc}")
         sys.exit(1)
