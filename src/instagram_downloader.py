@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from watermark import DEFAULT_WATERMARK_PATH, WatermarkError, apply_watermark, resolve_path
 
 ROOT = Path(__file__).resolve().parent.parent
 DOWNLOADS_DIR = ROOT / "downloads" / "instagram"
@@ -155,6 +156,9 @@ def download_instagram_reel(
     url: str,
     browser: Optional[str] = None,
     output_dir: Optional[Path] = None,
+    watermark_enabled: bool = True,
+    watermark_path: Optional[Path] = None,
+    watermark_position: str = "top-left",
 ) -> tuple[Path, Path]:
     if not is_instagram_reel_url(url):
         raise InstagramDownloadError("This script currently supports Instagram Reel URLs only.")
@@ -204,6 +208,15 @@ def download_instagram_reel(
 
     final_path = resolve_video_path(result.stdout, info, video_dir)
 
+    if watermark_enabled:
+        if watermark_path is None:
+            raise InstagramDownloadError("Watermark path was not provided.")
+        apply_watermark(
+            video_path=final_path,
+            watermark_path=watermark_path,
+            position=watermark_position,
+        )
+
     return final_path, meta_path
 
 
@@ -221,18 +234,46 @@ def main() -> None:
         default=None,
         help="Optional output directory for downloaded video and metadata",
     )
+    parser.add_argument(
+        "--no-watermark",
+        action="store_true",
+        help="Disable automatic watermarking",
+    )
+    parser.add_argument(
+        "--watermark-file",
+        default=str(DEFAULT_WATERMARK_PATH),
+        help="PNG watermark image path (default: evalwhiteverfied.png)",
+    )
+    parser.add_argument(
+        "--watermark-position",
+        choices=["top-left", "top-right", "bottom-left", "bottom-right"],
+        default="top-left",
+        help="Watermark position (default: top-left)",
+    )
     args = parser.parse_args()
 
     try:
         output_dir = resolve_output_dir(args.output_dir)
+        watermark_path = resolve_path(args.watermark_file)
+        if not args.no_watermark and not watermark_path.exists():
+            raise InstagramDownloadError(f"Watermark file not found: {watermark_path}")
+
         video_path, meta_path = download_instagram_reel(
             args.url,
             browser=args.browser,
             output_dir=output_dir,
+            watermark_enabled=not args.no_watermark,
+            watermark_path=watermark_path,
+            watermark_position=args.watermark_position,
         )
         print("Download complete.")
         print(f"Video target: {video_path}")
         print(f"Metadata saved: {meta_path}")
+        if not args.no_watermark:
+            print(f"Watermark applied ({args.watermark_position}): {watermark_path}")
+    except WatermarkError as exc:
+        print(f"Instagram download failed: {exc}")
+        sys.exit(1)
     except InstagramDownloadError as exc:
         print(f"Instagram download failed: {exc}")
         sys.exit(1)

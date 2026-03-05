@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yt_dlp
 
+from watermark import DEFAULT_WATERMARK_PATH, WatermarkError, apply_watermark, resolve_path
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DOWNLOADS_DIR = BASE_DIR / "downloads"
@@ -132,7 +134,13 @@ def save_video_metadata(metadata: dict, output_dir: Path, final_path: Path | Non
     return metadata_path
 
 
-def download_media(url: str, output_dir: Path) -> None:
+def download_media(
+    url: str,
+    output_dir: Path,
+    watermark_enabled: bool,
+    watermark_path: Path,
+    watermark_position: str,
+) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     ydl_opts = build_options(output_dir)
     started_at = time.time()
@@ -153,6 +161,14 @@ def download_media(url: str, output_dir: Path) -> None:
                 metadata_path = None
 
             if final_path is not None:
+                if watermark_enabled:
+                    print(f"Applying watermark: {watermark_path}")
+                    apply_watermark(
+                        video_path=final_path,
+                        watermark_path=watermark_path,
+                        position=watermark_position,
+                    )
+                    print(f"Watermark applied ({watermark_position}).")
                 print(f"Saved file: {final_path}")
             else:
                 print(f"Saved file in directory: {output_dir}")
@@ -161,6 +177,9 @@ def download_media(url: str, output_dir: Path) -> None:
                 print(f"Metadata saved: {metadata_path}")
     except yt_dlp.utils.DownloadError as exc:
         print(f"Download failed: {exc}")
+        sys.exit(1)
+    except WatermarkError as exc:
+        print(f"Watermarking failed: {exc}")
         sys.exit(1)
     except Exception as exc:
         print(f"Unexpected error: {exc}")
@@ -177,10 +196,38 @@ def main() -> None:
         default=None,
         help="Optional output directory for downloaded media",
     )
+    parser.add_argument(
+        "--no-watermark",
+        action="store_true",
+        help="Disable automatic watermarking",
+    )
+    parser.add_argument(
+        "--watermark-file",
+        default=str(DEFAULT_WATERMARK_PATH),
+        help="PNG watermark image path (default: evalwhiteverfied.png)",
+    )
+    parser.add_argument(
+        "--watermark-position",
+        choices=["top-left", "top-right", "bottom-left", "bottom-right"],
+        default="top-left",
+        help="Watermark position (default: top-left)",
+    )
 
     args = parser.parse_args()
     output_dir = resolve_output_dir(args.output_dir)
-    download_media(args.url, output_dir)
+    watermark_path = resolve_path(args.watermark_file)
+
+    if not args.no_watermark and not watermark_path.exists():
+        print(f"Error: watermark file not found: {watermark_path}")
+        sys.exit(1)
+
+    download_media(
+        args.url,
+        output_dir,
+        watermark_enabled=not args.no_watermark,
+        watermark_path=watermark_path,
+        watermark_position=args.watermark_position,
+    )
 
 
 if __name__ == "__main__":

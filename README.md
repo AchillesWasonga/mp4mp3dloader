@@ -8,6 +8,7 @@ Internal tool for downloading high-quality MP4 files from supported video URLs w
 - Output as MP4
 - Save locally
 - Save YouTube metadata as JSON sidecar (includes `caption`)
+- Auto-apply Eval watermark to downloaded videos (default: top-left)
 - Single-user internal use
 
 ## Initial Targets
@@ -21,7 +22,6 @@ Internal tool for downloading high-quality MP4 files from supported video URLs w
 - lightweight custom wrapper
 
 ## Out of Scope
-- watermarking
 - captions
 - reposting
 - scheduling
@@ -53,6 +53,12 @@ YouTube (default output to `downloads/`):
 YouTube (custom output folder):
 `./.venv/bin/python src/downloader.py "URL" --output-dir /tmp/eval-test`
 
+YouTube (custom watermark file + position):
+`./.venv/bin/python src/downloader.py "URL" --watermark-file /path/to/logo.png --watermark-position top-right`
+
+YouTube (disable watermark for one run):
+`./.venv/bin/python src/downloader.py "URL" --no-watermark`
+
 YouTube output:
 - Video: `<title>.mp4`
 - Metadata: `<title>.json` (includes `description` and `caption`)
@@ -62,5 +68,14 @@ Instagram (default output to `downloads/instagram` + `downloads/instagram_meta`)
 
 Instagram (custom output folder for both video + metadata):
 `./.venv/bin/python src/instagram_downloader.py "URL" --output-dir /tmp/eval-test`
+
+Instagram (custom watermark file + position):
+`./.venv/bin/python src/instagram_downloader.py "URL" --watermark-file /path/to/logo.png --watermark-position top-right`
+
+Watermark defaults:
+- enabled automatically for both YouTube and Instagram downloads
+- default file: `evalwhiteverfied.png` in repo root
+- default position: `top-left`
+- supported positions: `top-left`, `top-right`, `bottom-left`, `bottom-right`
 
 Adding wrapper
