@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mp4mp3dloader - Web UI</title>
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --panel: #ffffff;
+        --text: #1c2430;
+        --muted: #5f6b7a;
+        --accent: #0070f3;
+        --ok: #1d7f43;
+        --err: #b42318;
+        --border: #d5dbe3;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at top right, #e8f0ff 0%, var(--bg) 45%);
+      }
+      .container {
+        max-width: 980px;
+        margin: 28px auto;
+        padding: 0 16px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 8px 22px rgba(13, 38, 76, 0.07);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 22px;
+      }
+      p {
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+      form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .full {
+        grid-column: 1 / -1;
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input,
+      select,
+      button,
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        padding: 10px;
+        background: #fff;
+      }
+      button {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .checkbox {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .checkbox input {
+        width: auto;
+      }
+      .result {
+        margin-top: 16px;
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid var(--border);
+      }
+      .result.ok {
+        border-color: #9cd8b1;
+        background: #ecf9f1;
+      }
+      .result.err {
+        border-color: #f5b2aa;
+        background: #fff1f0;
+      }
+      .result h2 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+      .ok h2 {
+        color: var(--ok);
+      }
+      .err h2 {
+        color: var(--err);
+      }
+      pre {
+        margin: 10px 0 0;
+        padding: 10px;
+        border-radius: 8px;
+        background: #0f172a;
+        color: #e2e8f0;
+        overflow: auto;
+        font-size: 12px;
+      }
+      @media (max-width: 760px) {
+        form {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel">
+        <h1>mp4mp3dloader Web App</h1>
+        <p>Paste a YouTube or Instagram Reel URL, pick output and watermark settings, then download.</p>
+
+        <form method="post">
+          <div class="full">
+            <label for="url">Video URL</label>
+            <input
+              id="url"
+              name="url"
+              type="text"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value="{{ state.url }}"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="platform">Platform</label>
+            <select id="platform" name="platform">
+              {% for item in platform_choices %}
+              <option value="{{ item }}" {% if state.platform == item %}selected{% endif %}>
+                {{ item }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="browser">Instagram Browser Cookies (optional)</label>
+            <select id="browser" name="browser">
+              {% for item in browser_choices %}
+              <option value="{{ item }}" {% if state.browser == item %}selected{% endif %}>
+                {{ item if item else "none" }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="output_dir">Destination Folder</label>
+            <input id="output_dir" name="output_dir" type="text" value="{{ state.output_dir }}" />
+          </div>
+
+          <div class="full checkbox">
+            <input id="watermark_enabled" name="watermark_enabled" type="checkbox" {% if state.watermark_enabled %}checked{% endif %} />
+            <label for="watermark_enabled">Enable watermark</label>
+          </div>
+
+          <div>
+            <label for="watermark_file">Watermark File Path</label>
+            <input id="watermark_file" name="watermark_file" type="text" value="{{ state.watermark_file }}" />
+          </div>
+
+          <div>
+            <label for="watermark_position">Watermark Position</label>
+            <select id="watermark_position" name="watermark_position">
+              {% for item in position_choices %}
+              <option value="{{ item }}" {% if state.watermark_position == item %}selected{% endif %}>
+                {{ item }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="watermark_presets">Detected watermark files in repo root</label>
+            <select
+              id="watermark_presets"
+              onchange="document.getElementById('watermark_file').value=this.value;"
+            >
+              <option value="">select preset...</option>
+              {% for item in watermark_files %}
+              <option value="{{ item }}">{{ item }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="full">
+            <button type="submit">Start Download</button>
+          </div>
+        </form>
+
+        {% if result.ok is not none %}
+        <div class="result {{ 'ok' if result.ok else 'err' }}">
+          <h2>{{ result.message }}</h2>
+          {% if result.command %}
+          <div><strong>Command:</strong> <code>{{ result.command }}</code></div>
+          {% endif %}
+          <pre>{{ result.log }}</pre>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>

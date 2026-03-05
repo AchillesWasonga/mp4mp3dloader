@@ -78,4 +78,10 @@ Watermark defaults:
 - default position: `top-left`
 - supported positions: `top-left`, `top-right`, `bottom-left`, `bottom-right`
 
+Web app (URL paste + destination + watermark controls):
+1. Install deps: `./.venv/bin/pip install -r requirements.txt`
+2. Start app: `./.venv/bin/python src/web_app.py`
+3. Open: `http://127.0.0.1:5050`
+4. Paste URL, choose platform (or auto), set destination folder, and configure watermark.
+
 Adding wrapper
