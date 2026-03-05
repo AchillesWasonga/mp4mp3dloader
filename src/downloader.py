@@ -28,46 +28,25 @@ def resolve_output_dir(raw_output_dir: str | None) -> Path:
     return output_dir.resolve()
 
 
-def build_options(fmt: str, output_dir: Path) -> dict:
+def build_options(output_dir: Path) -> dict:
     output_template = str(output_dir / "%(title)s.%(ext)s")
-
-    if fmt == "mp4":
-        return {
-            "format": "bv*+ba/b",
-            "outtmpl": output_template,
-            "merge_output_format": "mp4",
-            "noplaylist": True,
-            "quiet": False,
-            "no_warnings": False,
-        }
-
-    if fmt == "mp3":
-        return {
-            "format": "bestaudio/best",
-            "outtmpl": output_template,
-            "noplaylist": True,
-            "quiet": False,
-            "no_warnings": False,
-            "postprocessors": [
-                {
-                    "key": "FFmpegExtractAudio",
-                    "preferredcodec": "mp3",
-                    "preferredquality": "192",
-                }
-            ],
-        }
-
-    raise ValueError(f"Unsupported format: {fmt}")
+    return {
+        "format": "bv*+ba/b",
+        "outtmpl": output_template,
+        "merge_output_format": "mp4",
+        "noplaylist": True,
+        "quiet": False,
+        "no_warnings": False,
+    }
 
 
 def find_final_output_path(
     info: dict,
     ydl: yt_dlp.YoutubeDL,
-    fmt: str,
     output_dir: Path,
     started_at: float,
 ) -> Path | None:
-    expected_suffix = ".mp3" if fmt == "mp3" else ".mp4"
+    expected_suffix = ".mp4"
     candidates: list[Path] = []
 
     def add_candidate(path_value: str | None) -> None:
@@ -88,7 +67,7 @@ def find_final_output_path(
 
     prepared = ydl.prepare_filename(info)
     add_candidate(prepared)
-    add_candidate(str(Path(prepared).with_suffix(expected_suffix)))
+    add_candidate(str(Path(prepared).with_suffix(".mp4")))
 
     for candidate in candidates:
         if candidate.exists():
@@ -107,9 +86,9 @@ def find_final_output_path(
     return matching_files[0] if matching_files else None
 
 
-def download_media(url: str, fmt: str, output_dir: Path) -> None:
+def download_media(url: str, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    ydl_opts = build_options(fmt, output_dir)
+    ydl_opts = build_options(output_dir)
     started_at = time.time()
 
     try:
@@ -120,7 +99,7 @@ def download_media(url: str, fmt: str, output_dir: Path) -> None:
             print("Done.")
 
             if isinstance(info, dict):
-                final_path = find_final_output_path(info, ydl, fmt, output_dir, started_at)
+                final_path = find_final_output_path(info, ydl, output_dir, started_at)
             else:
                 final_path = None
 
@@ -139,16 +118,8 @@ def download_media(url: str, fmt: str, output_dir: Path) -> None:
 def main() -> None:
     ensure_dependencies()
 
-    parser = argparse.ArgumentParser(
-        description="Download a YouTube/Shorts URL as MP4 or MP3"
-    )
+    parser = argparse.ArgumentParser(description="Download a YouTube/Shorts URL as MP4")
     parser.add_argument("url", help="Video URL")
-    parser.add_argument(
-        "--format",
-        choices=["mp4", "mp3"],
-        default="mp4",
-        help="Output format (default: mp4)",
-    )
     parser.add_argument(
         "--output-dir",
         default=None,
@@ -157,7 +128,7 @@ def main() -> None:
 
     args = parser.parse_args()
     output_dir = resolve_output_dir(args.output_dir)
-    download_media(args.url, args.format, output_dir)
+    download_media(args.url, output_dir)
 
 
 if __name__ == "__main__":

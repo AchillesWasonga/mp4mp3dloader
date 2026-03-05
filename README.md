@@ -1,11 +1,11 @@
-# MP4/MP3 Downloader
+# MP4 Downloader
 
-Internal tool for downloading high-quality MP4 or MP3 files from supported video URLs without using third-party downloader websites.
+Internal tool for downloading high-quality MP4 files from supported video URLs without using third-party downloader websites.
 
 ## MVP
 - Paste one supported URL
 - Download best available quality
-- Output as MP4 or MP3
+- Output as MP4
 - Save locally
 - Single-user internal use
 
@@ -47,10 +47,10 @@ Instagram’s Terms/Help pages also warn against unauthorized scraping/automated
 How to run it:
 
 YouTube (default output to `downloads/`):
-`./.venv/bin/python src/downloader.py "URL" --format mp4`
+`./.venv/bin/python src/downloader.py "URL"`
 
 YouTube (custom output folder):
-`./.venv/bin/python src/downloader.py "URL" --format mp3 --output-dir /tmp/eval-test`
+`./.venv/bin/python src/downloader.py "URL" --output-dir /tmp/eval-test`
 
 Instagram (default output to `downloads/instagram` + `downloads/instagram_meta`):
 `./.venv/bin/python src/instagram_downloader.py "URL"`
