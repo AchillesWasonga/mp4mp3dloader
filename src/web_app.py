@@ -20,7 +20,7 @@ app = Flask(__name__, template_folder=str(SRC_DIR / "templates"))
 def detect_platform(url: str) -> str | None:
     if re.search(r"(youtube\.com|youtu\.be)", url, flags=re.IGNORECASE):
         return "youtube"
-    if re.search(r"instagram\.com/reel/", url, flags=re.IGNORECASE):
+    if re.search(r"instagram\.com/reels?/", url, flags=re.IGNORECASE):
         return "instagram"
     return None
 

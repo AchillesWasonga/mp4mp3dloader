@@ -1,87 +1,36 @@
-# MP4 Downloader
+# mp4mp3dloader
 
-Internal tool for downloading high-quality MP4 files from supported video URLs without using third-party downloader websites.
+Internal MP4 downloader for YouTube/Shorts and Instagram Reels with optional watermarking.
 
-## MVP
-- Paste one supported URL
-- Download best available quality
-- Output as MP4
-- Save locally
-- Save YouTube metadata as JSON sidecar (includes `caption`)
-- Auto-apply Eval watermark to downloaded videos (default: top-left)
-- Single-user internal use
+## Features
+- Downloads highest available quality MP4
+- Supports YouTube videos, YouTube Shorts, and Instagram Reels
+- Saves YouTube metadata as `<title>.json` (`description` + `caption`)
+- Auto-applies watermark (default: `evalwhiteverfied.png`, `top-left`)
 
-## Initial Targets
-- YouTube videos
-- YouTube Shorts
-- Instagram Reels (later / lower priority)
+## Web App (Recommended)
+1. Install dependencies after activating python virtual environment:
+`./.venv/bin/pip install -r requirements.txt`
+2. Start server:
+`./.venv/bin/python src/web_app.py`
+3. Open:
+`http://127.0.0.1:5050`
+4. Paste URL, choose platform (or `auto`), choose destination folder, set watermark options, and click **Start Download**.
 
-## Planned Stack
-- yt-dlp
-- ffmpeg
-- lightweight custom wrapper
+Note: `GET /favicon.ico 404` in Flask logs is harmless.
 
-## Out of Scope
-- captions
-- reposting
-- scheduling
-- full workflow automation
+## CLI Quick Use
+YouTube:
+`./.venv/bin/python src/downloader.py "URL" --output-dir /path/to/save`
 
-## Goal
-Provide a clean, reliable, high-quality internal alternative to ad-filled download sites.
+Instagram:
+`./.venv/bin/python src/instagram_downloader.py "URL" --output-dir /path/to/save`
 
-How to open the files:
+Custom watermark:
+`--watermark-file /path/to/logo.png --watermark-position top-right`
 
-Rule of thumb
+Disable watermark:
+`--no-watermark`
 
-Want absolute best downloaded quality? Open with IINA/VLC
-
-Want best Apple/iPhone compatibility? Convert to H.264 + AAC
-
-So for maintaining the highest quality without converting, use IINA.
-
-For instagram:
-
-Instagram’s Terms/Help pages also warn against unauthorized scraping/automated collection, so this is best treated as an internal tool for content you have permission to reuse.
-
-
-How to run it:
-
-YouTube (default output to `downloads/`):
-`./.venv/bin/python src/downloader.py "URL"`
-
-YouTube (custom output folder):
-`./.venv/bin/python src/downloader.py "URL" --output-dir /tmp/eval-test`
-
-YouTube (custom watermark file + position):
-`./.venv/bin/python src/downloader.py "URL" --watermark-file /path/to/logo.png --watermark-position top-right`
-
-YouTube (disable watermark for one run):
-`./.venv/bin/python src/downloader.py "URL" --no-watermark`
-
-YouTube output:
-- Video: `<title>.mp4`
-- Metadata: `<title>.json` (includes `description` and `caption`)
-
-Instagram (default output to `downloads/instagram` + `downloads/instagram_meta`):
-`./.venv/bin/python src/instagram_downloader.py "URL"`
-
-Instagram (custom output folder for both video + metadata):
-`./.venv/bin/python src/instagram_downloader.py "URL" --output-dir /tmp/eval-test`
-
-Instagram (custom watermark file + position):
-`./.venv/bin/python src/instagram_downloader.py "URL" --watermark-file /path/to/logo.png --watermark-position top-right`
-
-Watermark defaults:
-- enabled automatically for both YouTube and Instagram downloads
-- default file: `evalwhiteverfied.png` in repo root
-- default position: `top-left`
-- supported positions: `top-left`, `top-right`, `bottom-left`, `bottom-right`
-
-Web app (URL paste + destination + watermark controls):
-1. Install deps: `./.venv/bin/pip install -r requirements.txt`
-2. Start app: `./.venv/bin/python src/web_app.py`
-3. Open: `http://127.0.0.1:5050`
-4. Paste URL, choose platform (or auto), set destination folder, and configure watermark.
-
-Adding wrapper
+Supported watermark positions:
+`top-left`, `top-right`, `bottom-left`, `bottom-right`

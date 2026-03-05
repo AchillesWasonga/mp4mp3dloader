@@ -18,7 +18,7 @@ class InstagramDownloadError(Exception):
 
 
 def is_instagram_reel_url(url: str) -> bool:
-    return bool(re.search(r"https?://(www\.)?instagram\.com/reel/", url))
+    return bool(re.search(r"https?://(www\.)?instagram\.com/reels?/", url))
 
 
 def run_cmd(cmd: list[str]) -> subprocess.CompletedProcess:
