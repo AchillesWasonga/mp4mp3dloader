@@ -45,7 +45,7 @@ def apply_watermark(
     watermark_path: Path,
     position: str = "top-left",
     padding: int = 24,
-    width_ratio: float = 0.18,
+    width_ratio: float = 0.54,
 ) -> Path:
     ensure_ffmpeg_installed()
 
