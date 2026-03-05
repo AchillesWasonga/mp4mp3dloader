@@ -33,6 +33,16 @@ def yt_dlp_base() -> list[str]:
     return [sys.executable, "-m", "yt_dlp"]
 
 
+def resolve_output_dir(raw_output_dir: str | None) -> Path | None:
+    if raw_output_dir is None:
+        return None
+
+    output_dir = Path(raw_output_dir).expanduser()
+    if not output_dir.is_absolute():
+        output_dir = Path.cwd() / output_dir
+    return output_dir.resolve()
+
+
 def metadata_cmd(url: str, browser: Optional[str] = None) -> list[str]:
     cmd = yt_dlp_base() + [
         "--skip-download",
@@ -56,6 +66,8 @@ def download_cmd(
         "bv*+ba/b",
         "--merge-output-format",
         "mp4",
+        "--print",
+        "after_move:filepath",
         "-o",
         output_template,
         url,
@@ -89,8 +101,8 @@ def fetch_metadata(url: str, browser: Optional[str] = None) -> dict:
         raise InstagramDownloadError(f"Could not parse metadata JSON: {exc}") from exc
 
 
-def save_credit_metadata(info: dict, url: str) -> Path:
-    META_DIR.mkdir(parents=True, exist_ok=True)
+def save_credit_metadata(info: dict, url: str, meta_dir: Path) -> Path:
+    meta_dir.mkdir(parents=True, exist_ok=True)
 
     short_id = info.get("id", "unknown_id")
     payload = {
@@ -107,16 +119,55 @@ def save_credit_metadata(info: dict, url: str) -> Path:
         "extractor": info.get("extractor"),
     }
 
-    path = META_DIR / f"{short_id}.json"
+    path = meta_dir / f"{short_id}.json"
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
     return path
 
 
-def download_instagram_reel(url: str, browser: Optional[str] = None) -> tuple[Path, Path]:
+def latest_video_file(output_dir: Path) -> Path | None:
+    mp4_files = sorted(
+        output_dir.glob("*.mp4"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    return mp4_files[0] if mp4_files else None
+
+
+def resolve_video_path(download_stdout: str, info: dict, video_dir: Path) -> Path:
+    output_lines = [line.strip() for line in download_stdout.splitlines() if line.strip()]
+    if output_lines:
+        candidate = Path(output_lines[-1]).expanduser()
+        if not candidate.is_absolute():
+            candidate = Path.cwd() / candidate
+        return candidate
+
+    uploader = info.get("uploader") or "unknown_creator"
+    title = info.get("title") or "untitled"
+    guessed = video_dir / f"{uploader} - {title}.mp4"
+    if guessed.exists():
+        return guessed
+
+    newest = latest_video_file(video_dir)
+    return newest if newest is not None else guessed
+
+
+def download_instagram_reel(
+    url: str,
+    browser: Optional[str] = None,
+    output_dir: Optional[Path] = None,
+) -> tuple[Path, Path]:
     if not is_instagram_reel_url(url):
         raise InstagramDownloadError("This script currently supports Instagram Reel URLs only.")
 
-    DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+    if output_dir is None:
+        video_dir = DOWNLOADS_DIR
+        meta_dir = META_DIR
+    else:
+        video_dir = output_dir
+        meta_dir = output_dir
+
+    video_dir.mkdir(parents=True, exist_ok=True)
+    meta_dir.mkdir(parents=True, exist_ok=True)
 
     # 1) Try public metadata fetch
     tried_browser = None
@@ -131,29 +182,27 @@ def download_instagram_reel(url: str, browser: Optional[str] = None) -> tuple[Pa
         else:
             raise
 
-    meta_path = save_credit_metadata(info, url)
+    meta_path = save_credit_metadata(info, url, meta_dir)
 
     # 2) Try public download first unless metadata already required cookies
     if tried_browser:
-        result = run_cmd(download_cmd(url, browser=tried_browser))
+        result = run_cmd(download_cmd(url, browser=tried_browser, output_dir=video_dir))
         if result.returncode != 0:
             raise InstagramDownloadError(result.stderr.strip() or result.stdout.strip())
     else:
-        result = run_cmd(download_cmd(url))
+        result = run_cmd(download_cmd(url, output_dir=video_dir))
         if result.returncode != 0:
             err = result.stderr.strip() or result.stdout.strip()
 
             if browser and should_retry_with_cookies(err):
-                retry = run_cmd(download_cmd(url, browser=browser))
+                retry = run_cmd(download_cmd(url, browser=browser, output_dir=video_dir))
                 if retry.returncode != 0:
                     raise InstagramDownloadError(retry.stderr.strip() or retry.stdout.strip())
+                result = retry
             else:
                 raise InstagramDownloadError(err)
 
-    # Best-effort guess of final path from metadata
-    uploader = info.get("uploader") or "unknown_creator"
-    title = info.get("title") or "untitled"
-    final_path = DOWNLOADS_DIR / f"{uploader} - {title}.mp4"
+    final_path = resolve_video_path(result.stdout, info, video_dir)
 
     return final_path, meta_path
 
@@ -167,10 +216,20 @@ def main() -> None:
         default=None,
         help="Optional browser to load cookies from if Instagram requires login/session",
     )
+    parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Optional output directory for downloaded video and metadata",
+    )
     args = parser.parse_args()
 
     try:
-        video_path, meta_path = download_instagram_reel(args.url, browser=args.browser)
+        output_dir = resolve_output_dir(args.output_dir)
+        video_path, meta_path = download_instagram_reel(
+            args.url,
+            browser=args.browser,
+            output_dir=output_dir,
+        )
         print("Download complete.")
         print(f"Video target: {video_path}")
         print(f"Metadata saved: {meta_path}")

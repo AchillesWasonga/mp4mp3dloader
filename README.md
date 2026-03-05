@@ -45,7 +45,17 @@ Instagram’s Terms/Help pages also warn against unauthorized scraping/automated
 
 
 How to run it:
-Youtube: python src/downloader.py "URL" --format mp4
-Instagram: python src/instagram_downloader.py "URL"
+
+YouTube (default output to `downloads/`):
+`./.venv/bin/python src/downloader.py "URL" --format mp4`
+
+YouTube (custom output folder):
+`./.venv/bin/python src/downloader.py "URL" --format mp3 --output-dir /tmp/eval-test`
+
+Instagram (default output to `downloads/instagram` + `downloads/instagram_meta`):
+`./.venv/bin/python src/instagram_downloader.py "URL"`
+
+Instagram (custom output folder for both video + metadata):
+`./.venv/bin/python src/instagram_downloader.py "URL" --output-dir /tmp/eval-test`
 
 Adding wrapper
