@@ -48,3 +48,4 @@ How to run it:
 Youtube: python src/downloader.py "URL" --format mp4
 Instagram: python src/instagram_downloader.py "URL"
 
+Adding wrapper
