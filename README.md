@@ -18,6 +18,7 @@ Internal MP4 downloader for YouTube/Shorts and Instagram Reels with optional wat
 4. Paste URL, choose platform (or `auto`), choose destination folder, set watermark options, and click **Start Download**.
 
 Note: `GET /favicon.ico 404` in Flask logs is harmless.
+If Instagram fails with access/login warnings, set **Instagram Browser Cookies** to a logged-in browser (e.g., `safari` or `chrome`).
 
 ## CLI Quick Use
 YouTube:

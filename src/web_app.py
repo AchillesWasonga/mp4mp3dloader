@@ -51,6 +51,18 @@ def run_download_command(cmd: list[str]) -> tuple[bool, str]:
     return result.returncode == 0, combined
 
 
+def instagram_access_blocked(log: str) -> bool:
+    lowered = log.lower()
+    signals = [
+        "instagram api is not granting access",
+        "empty media response",
+        "check if this post is accessible in your browser",
+        "login required",
+        "blocked public access",
+    ]
+    return any(s in lowered for s in signals)
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     state = {
@@ -139,9 +151,15 @@ def index():
                     result["command"] = " ".join(cmd)
                     ok, log = run_download_command(cmd)
                     result["ok"] = ok
-                    result["message"] = (
-                        "Download completed successfully." if ok else "Download failed."
-                    )
+                    if ok:
+                        result["message"] = "Download completed successfully."
+                    elif selected_platform == "instagram" and not state["browser"] and instagram_access_blocked(log):
+                        result["message"] = (
+                            "Download failed: Instagram blocked public access. "
+                            "Choose a logged-in browser in 'Instagram Browser Cookies'."
+                        )
+                    else:
+                        result["message"] = "Download failed."
                     result["log"] = log
 
     return render_template(

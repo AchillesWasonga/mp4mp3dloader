@@ -87,8 +87,24 @@ def should_retry_with_cookies(stderr: str) -> bool:
         "main webpage is locked behind the login page",
         "unable to extract shared data",
         "unable to extract additional data",
+        "instagram api is not granting access",
+        "empty media response",
+        "check if this post is accessible in your browser",
     ]
     return any(s in lowered for s in signals)
+
+
+def cookies_help_message(browser: Optional[str]) -> str:
+    if browser:
+        return (
+            f"Instagram blocked public access. Retry with a logged-in {browser} session "
+            "or try a different browser via --browser."
+        )
+    return (
+        "Instagram blocked public access for this reel. Choose a browser in the "
+        "web app (Instagram Browser Cookies) or pass --browser "
+        "{safari,chrome,firefox,edge,brave,chromium}."
+    )
 
 
 def fetch_metadata(url: str, browser: Optional[str] = None) -> dict:
@@ -183,6 +199,8 @@ def download_instagram_reel(
         if browser and should_retry_with_cookies(first_msg):
             tried_browser = browser
             info = fetch_metadata(url, browser=browser)
+        elif should_retry_with_cookies(first_msg):
+            raise InstagramDownloadError(cookies_help_message(browser))
         else:
             raise
 
@@ -203,6 +221,8 @@ def download_instagram_reel(
                 if retry.returncode != 0:
                     raise InstagramDownloadError(retry.stderr.strip() or retry.stdout.strip())
                 result = retry
+            elif should_retry_with_cookies(err):
+                raise InstagramDownloadError(cookies_help_message(browser))
             else:
                 raise InstagramDownloadError(err)
 
