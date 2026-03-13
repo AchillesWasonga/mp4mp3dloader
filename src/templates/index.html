@@ -3,221 +3,639 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mp4mp3dloader - Web UI</title>
+    <title>mp4mp3dloader</title>
     <style>
       :root {
-        --bg: #f4f6f8;
-        --panel: #ffffff;
-        --text: #1c2430;
-        --muted: #5f6b7a;
-        --accent: #0070f3;
-        --ok: #1d7f43;
-        --err: #b42318;
-        --border: #d5dbe3;
+        --bg: #f3efe6;
+        --bg-accent: #dbeafe;
+        --panel: rgba(255, 252, 247, 0.92);
+        --panel-strong: #fffaf2;
+        --text: #1f2937;
+        --muted: #667085;
+        --border: rgba(31, 41, 55, 0.12);
+        --accent: #0f766e;
+        --accent-strong: #0b5d57;
+        --ok-bg: #edfdf5;
+        --ok-border: #86efac;
+        --ok-text: #166534;
+        --err-bg: #fff1f2;
+        --err-border: #fda4af;
+        --err-text: #9f1239;
+        --code-bg: #111827;
+        --code-text: #f9fafb;
+        --shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
       }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         color: var(--text);
-        background: radial-gradient(circle at top right, #e8f0ff 0%, var(--bg) 45%);
+        font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+        background:
+          radial-gradient(circle at top right, rgba(56, 189, 248, 0.24), transparent 28%),
+          radial-gradient(circle at bottom left, rgba(15, 118, 110, 0.14), transparent 30%),
+          linear-gradient(135deg, var(--bg) 0%, #f8fbff 100%);
       }
-      .container {
-        max-width: 980px;
-        margin: 28px auto;
-        padding: 0 16px;
+
+      .shell {
+        max-width: 1120px;
+        margin: 36px auto;
+        padding: 0 18px 36px;
       }
+
+      .hero {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .hero-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 26px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(15, 118, 110, 0.09);
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2rem, 3vw, 3.1rem);
+        line-height: 1.02;
+      }
+
+      .lede {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .mini-card {
+        padding: 14px;
+        border-radius: 18px;
+        background: var(--panel-strong);
+        border: 1px solid var(--border);
+      }
+
+      .mini-card strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+      }
+
+      .mini-card span {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+        gap: 18px;
+      }
+
       .panel {
         background: var(--panel);
         border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 18px;
-        box-shadow: 0 8px 22px rgba(13, 38, 76, 0.07);
+        border-radius: 24px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
       }
-      h1 {
-        margin: 0 0 12px;
-        font-size: 22px;
+
+      .panel h2 {
+        margin: 0 0 6px;
+        font-size: 1.2rem;
       }
-      p {
+
+      .panel p {
         margin: 0 0 18px;
         color: var(--muted);
       }
+
       form {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        gap: 14px;
       }
+
       .full {
         grid-column: 1 / -1;
       }
+
       label {
         display: block;
-        font-size: 13px;
-        color: var(--muted);
         margin-bottom: 6px;
+        font-size: 0.92rem;
+        font-weight: 600;
       }
+
+      .field-help {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 0.84rem;
+        line-height: 1.4;
+      }
+
       input,
       select,
-      button,
-      textarea {
-        width: 100%;
-        box-sizing: border-box;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 14px;
-        padding: 10px;
-        background: #fff;
-      }
       button {
-        background: var(--accent);
-        color: #fff;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
+        width: 100%;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        border-radius: 16px;
+        padding: 14px 16px;
+        font: inherit;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.96);
       }
-      .checkbox {
+
+      input:focus,
+      select:focus,
+      button:focus {
+        outline: 2px solid rgba(15, 118, 110, 0.2);
+        outline-offset: 1px;
+        border-color: rgba(15, 118, 110, 0.48);
+      }
+
+      .toggle-row {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-top: 8px;
+        gap: 10px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.72);
       }
-      .checkbox input {
+
+      .toggle-row input {
         width: auto;
+        margin: 0;
+        transform: scale(1.15);
       }
+
+      .submit-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 4px;
+      }
+
+      .submit-note {
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      button {
+        border: none;
+        background: linear-gradient(135deg, var(--accent) 0%, #155eef 100%);
+        color: white;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+        box-shadow: 0 12px 24px rgba(21, 94, 239, 0.22);
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        opacity: 0.72;
+        cursor: wait;
+        transform: none;
+      }
+
+      .stack {
+        display: grid;
+        gap: 18px;
+      }
+
       .result {
-        margin-top: 16px;
-        border-radius: 10px;
-        padding: 12px;
+        border-radius: 22px;
+        padding: 18px;
         border: 1px solid var(--border);
       }
+
       .result.ok {
-        border-color: #9cd8b1;
-        background: #ecf9f1;
+        background: var(--ok-bg);
+        border-color: var(--ok-border);
       }
+
       .result.err {
-        border-color: #f5b2aa;
-        background: #fff1f0;
+        background: var(--err-bg);
+        border-color: var(--err-border);
       }
-      .result h2 {
-        margin: 0 0 8px;
-        font-size: 15px;
+
+      .status-kicker {
+        margin: 0 0 6px;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
       }
-      .ok h2 {
-        color: var(--ok);
+
+      .result.ok .status-kicker,
+      .result.ok h3 {
+        color: var(--ok-text);
       }
-      .err h2 {
-        color: var(--err);
+
+      .result.err .status-kicker,
+      .result.err h3 {
+        color: var(--err-text);
       }
-      pre {
+
+      .result h3 {
+        margin: 0;
+        font-size: 1.35rem;
+      }
+
+      .result p {
         margin: 10px 0 0;
-        padding: 10px;
-        border-radius: 8px;
-        background: #0f172a;
-        color: #e2e8f0;
-        overflow: auto;
-        font-size: 12px;
+        color: var(--text);
       }
-      @media (max-width: 760px) {
+
+      .meta-list,
+      .tips {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .meta-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+      }
+
+      .meta-item strong {
+        white-space: nowrap;
+      }
+
+      .meta-item code {
+        word-break: break-word;
+        text-align: right;
+      }
+
+      .tips div {
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+      }
+
+      details {
+        margin-top: 16px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.75);
+      }
+
+      summary {
+        padding: 14px 16px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      pre {
+        margin: 0;
+        padding: 14px 16px 18px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--code-bg);
+        color: var(--code-text);
+        overflow: auto;
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+
+      .sidebar-card {
+        padding: 16px;
+        border-radius: 18px;
+        background: var(--panel-strong);
+        border: 1px solid var(--border);
+      }
+
+      .sidebar-card h3 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+      }
+
+      .sidebar-card p,
+      .sidebar-card li {
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      .sidebar-card ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+      }
+
+      .field-hidden {
+        display: none;
+      }
+
+      @media (max-width: 920px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .shell {
+          margin: 20px auto;
+          padding: 0 12px 24px;
+        }
+
+        .hero-card,
+        .panel {
+          padding: 18px;
+          border-radius: 20px;
+        }
+
         form {
           grid-template-columns: 1fr;
+        }
+
+        .meta-item {
+          flex-direction: column;
+        }
+
+        .meta-item code {
+          text-align: left;
         }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="panel">
-        <h1>mp4mp3dloader Web App</h1>
-        <p>Paste a YouTube or Instagram Reel URL, pick output and watermark settings, then download.</p>
-
-        <form method="post">
-          <div class="full">
-            <label for="url">Video URL</label>
-            <input
-              id="url"
-              name="url"
-              type="text"
-              placeholder="https://www.youtube.com/watch?v=..."
-              value="{{ state.url }}"
-              required
-            />
+    <div class="shell">
+      <section class="hero">
+        <div class="hero-card">
+          <div class="eyebrow">Internal Downloader</div>
+          <h1>Download cleanly, save locally, keep the context.</h1>
+          <p class="lede">
+            Paste a YouTube or Instagram Reel link, choose where it should land,
+            and optionally apply a watermark. The app saves the video locally
+            and keeps metadata alongside supported downloads.
+          </p>
+          <div class="hero-grid">
+            <div class="mini-card">
+              <strong>Supported</strong>
+              <span>YouTube videos, YouTube Shorts, Instagram Reels</span>
+            </div>
+            <div class="mini-card">
+              <strong>Output</strong>
+              <span>Highest available MP4 plus metadata where supported</span>
+            </div>
+            <div class="mini-card">
+              <strong>Instagram note</strong>
+              <span>Some reels require a logged-in browser session to access.</span>
+            </div>
           </div>
-
-          <div>
-            <label for="platform">Platform</label>
-            <select id="platform" name="platform">
-              {% for item in platform_choices %}
-              <option value="{{ item }}" {% if state.platform == item %}selected{% endif %}>
-                {{ item }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div>
-            <label for="browser">Instagram Browser Cookies (optional)</label>
-            <select id="browser" name="browser">
-              {% for item in browser_choices %}
-              <option value="{{ item }}" {% if state.browser == item %}selected{% endif %}>
-                {{ item if item else "none" }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="full">
-            <label for="output_dir">Destination Folder</label>
-            <input id="output_dir" name="output_dir" type="text" value="{{ state.output_dir }}" />
-          </div>
-
-          <div class="full checkbox">
-            <input id="watermark_enabled" name="watermark_enabled" type="checkbox" {% if state.watermark_enabled %}checked{% endif %} />
-            <label for="watermark_enabled">Enable watermark</label>
-          </div>
-
-          <div>
-            <label for="watermark_file">Watermark File Path</label>
-            <input id="watermark_file" name="watermark_file" type="text" value="{{ state.watermark_file }}" />
-          </div>
-
-          <div>
-            <label for="watermark_position">Watermark Position</label>
-            <select id="watermark_position" name="watermark_position">
-              {% for item in position_choices %}
-              <option value="{{ item }}" {% if state.watermark_position == item %}selected{% endif %}>
-                {{ item }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="full">
-            <label for="watermark_presets">Detected watermark files in repo root</label>
-            <select
-              id="watermark_presets"
-              onchange="document.getElementById('watermark_file').value=this.value;"
-            >
-              <option value="">select preset...</option>
-              {% for item in watermark_files %}
-              <option value="{{ item }}">{{ item }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="full">
-            <button type="submit">Start Download</button>
-          </div>
-        </form>
-
-        {% if result.ok is not none %}
-        <div class="result {{ 'ok' if result.ok else 'err' }}">
-          <h2>{{ result.message }}</h2>
-          {% if result.command %}
-          <div><strong>Command:</strong> <code>{{ result.command }}</code></div>
-          {% endif %}
-          <pre>{{ result.log }}</pre>
         </div>
-        {% endif %}
+      </section>
+
+      <div class="layout">
+        <section class="panel">
+          <h2>Download Request</h2>
+          <p>Choose the source, destination, and watermark behavior for this run.</p>
+
+          <form method="post" id="download-form">
+            <div class="full">
+              <label for="url">Video URL</label>
+              <input
+                id="url"
+                name="url"
+                type="text"
+                placeholder="https://www.youtube.com/watch?v=... or https://www.instagram.com/reel/..."
+                value="{{ state.url }}"
+                required
+              />
+              <div class="field-help">Paste a direct YouTube or Instagram reel URL.</div>
+            </div>
+
+            <div>
+              <label for="platform">Platform</label>
+              <select id="platform" name="platform">
+                {% for item in platform_choices %}
+                <option value="{{ item }}" {% if state.platform == item %}selected{% endif %}>
+                  {{ item }}
+                </option>
+                {% endfor %}
+              </select>
+              <div class="field-help">Use <code>auto</code> unless you need to override detection.</div>
+            </div>
+
+            <div id="browser-field">
+              <label for="browser">Instagram Browser Cookies</label>
+              <select id="browser" name="browser">
+                {% for item in browser_choices %}
+                <option value="{{ item }}" {% if state.browser == item %}selected{% endif %}>
+                  {{ item if item else "none" }}
+                </option>
+                {% endfor %}
+              </select>
+              <div class="field-help">Choose a logged-in browser if Instagram blocks public access.</div>
+            </div>
+
+            <div class="full">
+              <label for="output_dir">Destination Folder</label>
+              <input
+                id="output_dir"
+                name="output_dir"
+                type="text"
+                value="{{ state.output_dir }}"
+                placeholder="{{ state.output_dir }}"
+              />
+              <div class="field-help">Absolute paths work best. The folder will be created if needed.</div>
+            </div>
+
+            <div class="full">
+              <div class="toggle-row">
+                <input
+                  id="watermark_enabled"
+                  name="watermark_enabled"
+                  type="checkbox"
+                  {% if state.watermark_enabled %}checked{% endif %}
+                />
+                <label for="watermark_enabled">Enable watermark</label>
+              </div>
+            </div>
+
+            <div class="watermark-field">
+              <label for="watermark_file">Watermark File Path</label>
+              <input
+                id="watermark_file"
+                name="watermark_file"
+                type="text"
+                value="{{ state.watermark_file }}"
+              />
+              <div class="field-help">PNG works best. You can paste another brand asset here later.</div>
+            </div>
+
+            <div class="watermark-field">
+              <label for="watermark_position">Watermark Position</label>
+              <select id="watermark_position" name="watermark_position">
+                {% for item in position_choices %}
+                <option value="{{ item }}" {% if state.watermark_position == item %}selected{% endif %}>
+                  {{ item }}
+                </option>
+                {% endfor %}
+              </select>
+              <div class="field-help">Top-left is the current default for Eval exports.</div>
+            </div>
+
+            <div class="full watermark-field">
+              <label for="watermark_presets">Detected watermark files in repo root</label>
+              <select id="watermark_presets">
+                <option value="">Select a preset...</option>
+                {% for item in watermark_files %}
+                <option value="{{ item }}">{{ item }}</option>
+                {% endfor %}
+              </select>
+              <div class="field-help">Choosing a preset fills the watermark path field for you.</div>
+            </div>
+
+            <div class="full submit-row">
+              <button type="submit" id="submit-button">Start Download</button>
+              <div class="submit-note">The page waits for the downloader to finish, then shows the result.</div>
+            </div>
+          </form>
+        </section>
+
+        <aside class="stack">
+          <section class="panel">
+            <h2>What To Expect</h2>
+            <div class="sidebar-card">
+              <h3>Success</h3>
+              <p>You will see the saved video path, any metadata path, and the destination folder.</p>
+            </div>
+            <div class="sidebar-card">
+              <h3>Instagram restrictions</h3>
+              <p>If Instagram refuses public access, choose <code>safari</code> or <code>chrome</code> and make sure that browser is logged into Instagram.</p>
+            </div>
+            <div class="sidebar-card">
+              <h3>Unavailable source</h3>
+              <p>If the reel or video is gone at the source, the downloader cannot recover it. A new URL is required.</p>
+            </div>
+          </section>
+
+          {% if result.ok is not none %}
+          <section class="result {{ 'ok' if result.ok else 'err' }}">
+            <div class="status-kicker">{{ 'Completed' if result.ok else 'Needs attention' }}</div>
+            <h3>{{ result.title }}</h3>
+            <p>{{ result.message }}</p>
+
+            {% if result.saved_paths %}
+            <div class="meta-list">
+              {% for label, path in result.saved_paths %}
+              <div class="meta-item">
+                <strong>{{ label }}</strong>
+                <code>{{ path }}</code>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if result.tips %}
+            <div class="tips">
+              {% for tip in result.tips %}
+              <div>{{ tip }}</div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if result.technical_note %}
+            <details>
+              <summary>Technical note</summary>
+              <pre>{{ result.technical_note }}</pre>
+            </details>
+            {% endif %}
+
+            {% if result.command or result.log %}
+            <details>
+              <summary>Full command and logs</summary>
+              <pre>{% if result.command %}Command: {{ result.command }}{% endif %}{% if result.log %}{% if result.command %}\n\n{% endif %}{{ result.log }}{% endif %}</pre>
+            </details>
+            {% endif %}
+          </section>
+          {% endif %}
+        </aside>
       </div>
     </div>
+
+    <script>
+      const platformField = document.getElementById("platform");
+      const browserField = document.getElementById("browser-field");
+      const watermarkToggle = document.getElementById("watermark_enabled");
+      const watermarkFields = document.querySelectorAll(".watermark-field");
+      const presetField = document.getElementById("watermark_presets");
+      const watermarkPathField = document.getElementById("watermark_file");
+      const form = document.getElementById("download-form");
+      const submitButton = document.getElementById("submit-button");
+
+      function syncPlatformVisibility() {
+        const showBrowser = platformField.value === "instagram" || platformField.value === "auto";
+        browserField.classList.toggle("field-hidden", !showBrowser);
+      }
+
+      function syncWatermarkVisibility() {
+        watermarkFields.forEach((field) => {
+          field.classList.toggle("field-hidden", !watermarkToggle.checked);
+        });
+      }
+
+      presetField.addEventListener("change", () => {
+        if (presetField.value) {
+          watermarkPathField.value = presetField.value;
+        }
+      });
+
+      platformField.addEventListener("change", syncPlatformVisibility);
+      watermarkToggle.addEventListener("change", syncWatermarkVisibility);
+
+      form.addEventListener("submit", () => {
+        submitButton.disabled = true;
+        submitButton.textContent = "Downloading...";
+      });
+
+      syncPlatformVisibility();
+      syncWatermarkVisibility();
+    </script>
   </body>
 </html>
